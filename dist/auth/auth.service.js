@@ -28,12 +28,14 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../student/entities/user.entity");
+const notification_service_1 = require("../notification/notification.service");
 const bcrypt = require("bcrypt");
 const jwt_1 = require("@nestjs/jwt");
 let AuthService = class AuthService {
-    constructor(usersRepository, jwtService) {
+    constructor(usersRepository, jwtService, notificationService) {
         this.usersRepository = usersRepository;
         this.jwtService = jwtService;
+        this.notificationService = notificationService;
     }
     sanitizeUser(user) {
         const { password } = user, sanitizedUser = __rest(user, ["password"]);
@@ -57,6 +59,7 @@ let AuthService = class AuthService {
                 role: user_entity_1.UserRole.ADMIN,
             });
             await this.usersRepository.save(user);
+            await this.notificationService.createNotification(user, 'You have been registered successfully as an admin.');
             const payload = { username: user.username, sub: user.id, role: user.role };
             console.log(`Admin registered and logged in: ${username}, role: ${user.role}`);
             return {
@@ -100,6 +103,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        notification_service_1.NotificationService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

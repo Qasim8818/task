@@ -5,6 +5,7 @@ import { User, UserRole } from "../student/entities/user.entity";
 import { Task } from "../student/entities/task.entity";
 import { MCQ } from "../student/entities/mcq.entity";
 import * as bcrypt from "bcrypt";
+import { NotificationService } from '../notification/notification.service';
 @Injectable()
 export class AdminService {
   constructor(
@@ -14,6 +15,7 @@ export class AdminService {
     private tasksRepository: Repository<Task>,
     @InjectRepository(MCQ)
     private mcqRepository: Repository<MCQ>,
+    private notificationService: NotificationService,
   ) {}
 
   async registerStudent(username: string, password: string): Promise<any> {
@@ -30,6 +32,7 @@ export class AdminService {
       role: UserRole.STUDENT,
     });
     await this.usersRepository.save(user);
+    await this.notificationService.createNotification(user, `You have been registered by admin with username: ${user.role}. Your username is ${user} and your password is the one you set.`);
     return { user, message: " Student registered successfully" };
   }
 
@@ -48,6 +51,7 @@ export class AdminService {
         description,
         admin,
       });
+      await this.notificationService.createNotification(admin, `Task "${title}" uploaded successfully.`);
       return await this.tasksRepository.save(task);
     } catch (error) {
       throw new Error(`Failed to upload task: ${error.message}`);

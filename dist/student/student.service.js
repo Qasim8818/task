@@ -20,12 +20,14 @@ const user_entity_1 = require("./entities/user.entity");
 const task_entity_1 = require("./entities/task.entity");
 const submission_entity_1 = require("./entities/submission.entity");
 const mcq_entity_1 = require("./entities/mcq.entity");
+const notification_service_1 = require("../notification/notification.service");
 let StudentService = class StudentService {
-    constructor(usersRepository, tasksRepository, submissionsRepository, mcqRepository) {
+    constructor(usersRepository, tasksRepository, submissionsRepository, mcqRepository, notificationService) {
         this.usersRepository = usersRepository;
         this.tasksRepository = tasksRepository;
         this.submissionsRepository = submissionsRepository;
         this.mcqRepository = mcqRepository;
+        this.notificationService = notificationService;
     }
     async getTasks() {
         return this.tasksRepository.find();
@@ -34,7 +36,8 @@ let StudentService = class StudentService {
         return this.mcqRepository.find({ where: { task: { id: taskId } } });
     }
     async submitAnswers(submitAnswersDto) {
-        const { studentId, taskId, answers } = submitAnswersDto;
+        const { studentId, taskId, answers, startTime, endTime } = submitAnswersDto;
+        const attemptTime = endTime - startTime;
         const student = await this.usersRepository.findOne({ where: { id: studentId, role: user_entity_1.UserRole.STUDENT } });
         if (!student) {
             throw new common_1.NotFoundException('Student not found');
@@ -58,11 +61,43 @@ let StudentService = class StudentService {
             task,
             imageUrl,
             score,
+            attemptTime,
         });
-        return this.submissionsRepository.save(submission);
+        await this.submissionsRepository.save(submission);
+        await this.notificationService.createNotification(student, `You have submitted answers for task "${task.title}". Your score is ${score} and time taken is ${attemptTime} ms.`);
+        return submission;
     }
     async generateResultImage(score) {
         return `data:image/png;base64,RESULT_IMAGE_BASE64_WITH_SCORE_${score}`;
+    }
+    async getDailyLeaderboard() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const submissions = await this.submissionsRepository.
+            createQueryBuilder('submission')
+            .leftJoinAndSelect('submission.student', 'student')
+            .leftJoinAndSelect('submission.task', 'task')
+            .where('submission.createdAt >= :today', { today })
+            .getMany();
+        const leaderboard = submissions.map(submission => ({
+            studentId: submission.student.id,
+            studentName: submission.student.username,
+            taskTitle: submission.task.title,
+            score: submission.score,
+            attemptTime: submission.attemptTime,
+        }));
+        leaderboard.sort((a, b) => b.score - a.score || a.attemptTime
+            - b.attemptTime);
+        return leaderboard.slice(0, 10);
+    }
+    async getStudentById(studentId) {
+        const student = await this.usersRepository.findOne({
+            where: { id: studentId, role: user_entity_1.UserRole.STUDENT },
+        });
+        if (!student) {
+            throw new common_1.NotFoundException('Student not found');
+        }
+        return student;
     }
 };
 exports.StudentService = StudentService;
@@ -75,6 +110,7 @@ exports.StudentService = StudentService = __decorate([
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        notification_service_1.NotificationService])
 ], StudentService);
 //# sourceMappingURL=student.service.js.map

@@ -14,12 +14,13 @@ const admin_controller_1 = require("./admin.controller");
 const user_entity_1 = require("../student/entities/user.entity");
 const task_entity_1 = require("../student/entities/task.entity");
 const mcq_entity_1 = require("../student/entities/mcq.entity");
+const notification_module_1 = require("../notification/notification.module");
 let AdminModule = class AdminModule {
 };
 exports.AdminModule = AdminModule;
 exports.AdminModule = AdminModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, task_entity_1.Task, mcq_entity_1.MCQ])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, task_entity_1.Task, mcq_entity_1.MCQ]), notification_module_1.NotificationModule],
         providers: [admin_service_1.AdminService],
         controllers: [admin_controller_1.AdminController],
     })

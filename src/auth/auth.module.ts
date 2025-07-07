@@ -7,6 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt-strategy/jwt.strategy';
 
+import { NotificationModule } from '../notification/notification.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
@@ -15,6 +17,7 @@ import { JwtStrategy } from './jwt-strategy/jwt.strategy';
       secret: 'secretKey',
       signOptions: { expiresIn: '1h' },
     }),
+    NotificationModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],

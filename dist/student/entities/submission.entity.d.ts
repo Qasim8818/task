@@ -6,4 +6,5 @@ export declare class Submission {
     task: Task;
     imageUrl: string;
     score: number;
+    attemptTime: number;
 }

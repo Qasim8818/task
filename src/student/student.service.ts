@@ -6,6 +6,7 @@ import { Task } from './entities/task.entity';
 import { Submission } from './entities/submission.entity';
 import { MCQ } from './entities/mcq.entity';
 import { SubmitAnswersDto } from './dto/submit-answers.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class StudentService {
@@ -18,6 +19,7 @@ export class StudentService {
     private submissionsRepository: Repository<Submission>,
     @InjectRepository(MCQ)
     private mcqRepository: Repository<MCQ>,
+    private notificationService: NotificationService,
   ) {}
 
   async getTasks(): Promise<Task[]> {
@@ -29,7 +31,8 @@ export class StudentService {
   }
 
   async submitAnswers(submitAnswersDto: SubmitAnswersDto): Promise<Submission> {
-    const { studentId, taskId, answers } = submitAnswersDto;
+    const { studentId, taskId, answers, startTime, endTime } = submitAnswersDto;
+    const attemptTime = endTime - startTime;
 
     const student = await this.usersRepository.findOne({ where: { id: studentId, role: UserRole.STUDENT } });
     if (!student) {
@@ -59,12 +62,46 @@ export class StudentService {
       task,
       imageUrl,
       score,
+      attemptTime,
     });
-
-    return this.submissionsRepository.save(submission);
+    await this.submissionsRepository.save(submission);
+    await this.notificationService.createNotification(student, `You have submitted answers for task "${task.title}". Your score is ${score} and time taken is ${attemptTime} ms.`);
+    return submission;
   }
 
   private async generateResultImage(score: number): Promise<string> {
     return `data:image/png;base64,RESULT_IMAGE_BASE64_WITH_SCORE_${score}`;
   }
+
+  async getDailyLeaderboard(): Promise<any[]> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const submissions = await this.submissionsRepository.
+    createQueryBuilder('submission')
+      .leftJoinAndSelect('submission.student', 'student')
+      .leftJoinAndSelect('submission.task', 'task')
+      .where('submission.createdAt >= :today', { today })
+      .getMany();
+    const leaderboard = submissions.map(submission => ({
+      studentId: submission.student.id,
+      studentName: submission.student.username,
+      taskTitle: submission.task.title,
+      score: submission.score,
+      attemptTime: submission.attemptTime,
+    }));
+    leaderboard.sort((a, b) => b.score - a.score || a.attemptTime
+  - b.attemptTime); // Sort by score desc, then by attempt time asc
+    return leaderboard.slice(0, 10); // Return top 10
+  }
+
+  async getStudentById(studentId: number): Promise<User> {
+    const student = await this.usersRepository.findOne({
+      where: { id: studentId, role: UserRole.STUDENT },
+    });
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+    return student;
+  }   
 }

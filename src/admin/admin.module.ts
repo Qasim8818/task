@@ -6,8 +6,10 @@ import { User } from '../student/entities/user.entity';
 import { Task } from '../student/entities/task.entity';
 import { MCQ } from '../student/entities/mcq.entity';
 
+import { NotificationModule } from '../notification/notification.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Task, MCQ])],
+  imports: [TypeOrmModule.forFeature([User, Task, MCQ]), NotificationModule],
   providers: [AdminService],
   controllers: [AdminController],
 })

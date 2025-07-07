@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Submission } from './submission.entity';
+import { Notification } from '../../notification/notification.entity';
 
 export const UserRole = {
   ADMIN: 'admin',
@@ -23,4 +24,7 @@ export class User {
   role: string;
 
   @OneToMany(() => Submission, submission => submission.student) submissions: Submission[];
+
+  @OneToMany(() => Notification, notification => notification.user)
+  notifications: Notification[];
 }

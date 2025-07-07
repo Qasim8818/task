@@ -16,12 +16,13 @@ const task_entity_1 = require("./entities/task.entity");
 const submission_entity_1 = require("./entities/submission.entity");
 const mcq_entity_1 = require("./entities/mcq.entity");
 const auth_module_1 = require("../auth/auth.module");
+const notification_module_1 = require("../notification/notification.module");
 let StudentModule = class StudentModule {
 };
 exports.StudentModule = StudentModule;
 exports.StudentModule = StudentModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, task_entity_1.Task, submission_entity_1.Submission, mcq_entity_1.MCQ]), auth_module_1.AuthModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, task_entity_1.Task, submission_entity_1.Submission, mcq_entity_1.MCQ]), auth_module_1.AuthModule, notification_module_1.NotificationModule],
         providers: [student_service_1.StudentService],
         controllers: [student_controller_1.StudentController],
     })

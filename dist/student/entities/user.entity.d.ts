@@ -1,4 +1,5 @@
 import { Submission } from './submission.entity';
+import { Notification } from '../../notification/notification.entity';
 export declare const UserRole: {
     readonly ADMIN: "admin";
     readonly STUDENT: "student";
@@ -10,4 +11,5 @@ export declare class User {
     password: string;
     role: string;
     submissions: Submission[];
+    notifications: Notification[];
 }

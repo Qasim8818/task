@@ -18,4 +18,7 @@ export class Submission {
 
   @Column({ nullable: true })
   score: number;
+
+  @Column({ type: 'int', nullable: true })
+  attemptTime: number;
 }

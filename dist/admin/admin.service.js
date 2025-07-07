@@ -20,11 +20,13 @@ const user_entity_1 = require("../student/entities/user.entity");
 const task_entity_1 = require("../student/entities/task.entity");
 const mcq_entity_1 = require("../student/entities/mcq.entity");
 const bcrypt = require("bcrypt");
+const notification_service_1 = require("../notification/notification.service");
 let AdminService = class AdminService {
-    constructor(usersRepository, tasksRepository, mcqRepository) {
+    constructor(usersRepository, tasksRepository, mcqRepository, notificationService) {
         this.usersRepository = usersRepository;
         this.tasksRepository = tasksRepository;
         this.mcqRepository = mcqRepository;
+        this.notificationService = notificationService;
     }
     async registerStudent(username, password) {
         const existingUser = await this.usersRepository.findOne({
@@ -40,6 +42,7 @@ let AdminService = class AdminService {
             role: user_entity_1.UserRole.STUDENT,
         });
         await this.usersRepository.save(user);
+        await this.notificationService.createNotification(user, `You have been registered by admin with username: ${user.role}. Your username is ${user} and your password is the one you set.`);
         return { user, message: " Student registered successfully" };
     }
     async uploadTask(title, description, adminId) {
@@ -53,6 +56,7 @@ let AdminService = class AdminService {
                 description,
                 admin,
             });
+            await this.notificationService.createNotification(admin, `Task "${title}" uploaded successfully.`);
             return await this.tasksRepository.save(task);
         }
         catch (error) {
@@ -101,6 +105,7 @@ exports.AdminService = AdminService = __decorate([
     __param(2, (0, typeorm_1.InjectRepository)(mcq_entity_1.MCQ)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        notification_service_1.NotificationService])
 ], AdminService);
 //# sourceMappingURL=admin.service.js.map

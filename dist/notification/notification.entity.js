@@ -9,38 +9,33 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Submission = void 0;
+exports.Notification = void 0;
 const typeorm_1 = require("typeorm");
-const user_entity_1 = require("./user.entity");
-const task_entity_1 = require("./task.entity");
-let Submission = class Submission {
+const user_entity_1 = require("../student/entities/user.entity");
+let Notification = class Notification {
 };
-exports.Submission = Submission;
+exports.Notification = Notification;
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
-], Submission.prototype, "id", void 0);
+], Notification.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, user => user.id),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, user => user.notifications, { eager: true }),
     __metadata("design:type", user_entity_1.User)
-], Submission.prototype, "student", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => task_entity_1.Task, task => task.id),
-    __metadata("design:type", task_entity_1.Task)
-], Submission.prototype, "task", void 0);
+], Notification.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], Submission.prototype, "imageUrl", void 0);
+], Notification.prototype, "message", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", Number)
-], Submission.prototype, "score", void 0);
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], Notification.prototype, "read", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
-    __metadata("design:type", Number)
-], Submission.prototype, "attemptTime", void 0);
-exports.Submission = Submission = __decorate([
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], Notification.prototype, "createdAt", void 0);
+exports.Notification = Notification = __decorate([
     (0, typeorm_1.Entity)()
-], Submission);
-//# sourceMappingURL=submission.entity.js.map
+], Notification);
+//# sourceMappingURL=notification.entity.js.map

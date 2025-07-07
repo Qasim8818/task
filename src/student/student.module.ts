@@ -7,9 +7,10 @@ import { Task } from './entities/task.entity';
 import { Submission } from './entities/submission.entity';
 import { MCQ } from './entities/mcq.entity';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Task, Submission, MCQ]), AuthModule],
+  imports: [TypeOrmModule.forFeature([User, Task, Submission, MCQ]), AuthModule, NotificationModule],
   providers: [StudentService],
   controllers: [StudentController],
 })

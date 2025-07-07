@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = exports.UserRole = void 0;
 const typeorm_1 = require("typeorm");
 const submission_entity_1 = require("./submission.entity");
+const notification_entity_1 = require("../../notification/notification.entity");
 exports.UserRole = {
     ADMIN: 'admin',
     STUDENT: 'student',
@@ -39,6 +40,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => submission_entity_1.Submission, submission => submission.student),
     __metadata("design:type", Array)
 ], User.prototype, "submissions", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => notification_entity_1.Notification, notification => notification.user),
+    __metadata("design:type", Array)
+], User.prototype, "notifications", void 0);
 exports.User = User = __decorate([
     (0, typeorm_1.Entity)()
 ], User);

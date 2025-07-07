@@ -4,14 +4,18 @@ import { Task } from './entities/task.entity';
 import { Submission } from './entities/submission.entity';
 import { MCQ } from './entities/mcq.entity';
 import { SubmitAnswersDto } from './dto/submit-answers.dto';
+import { NotificationService } from '../notification/notification.service';
 export declare class StudentService {
     private usersRepository;
     private tasksRepository;
     private submissionsRepository;
     private mcqRepository;
-    constructor(usersRepository: Repository<User>, tasksRepository: Repository<Task>, submissionsRepository: Repository<Submission>, mcqRepository: Repository<MCQ>);
+    private notificationService;
+    constructor(usersRepository: Repository<User>, tasksRepository: Repository<Task>, submissionsRepository: Repository<Submission>, mcqRepository: Repository<MCQ>, notificationService: NotificationService);
     getTasks(): Promise<Task[]>;
     getMCQsByTask(taskId: number): Promise<MCQ[]>;
     submitAnswers(submitAnswersDto: SubmitAnswersDto): Promise<Submission>;
     private generateResultImage;
+    getDailyLeaderboard(): Promise<any[]>;
+    getStudentById(studentId: number): Promise<User>;
 }

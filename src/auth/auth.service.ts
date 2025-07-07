@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '../student/entities/user.entity';
-
+import { NotificationService } from 'src/notification/notification.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
@@ -14,6 +14,7 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private notificationService: NotificationService,
   ) {}
 
   private sanitizeUser(user: User): Omit<User, 'password'> {
@@ -60,6 +61,7 @@ export class AuthService {
         role: UserRole.ADMIN,
       });
       await this.usersRepository.save(user);
+      await this.notificationService.createNotification(user, 'You have been registered successfully as an admin.');
       const payload = { username: user.username, sub: user.id, role: user.role };
       console.log(`Admin registered and logged in: ${username}, role: ${user.role}`);
       return {

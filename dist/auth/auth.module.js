@@ -15,6 +15,7 @@ const user_entity_1 = require("../student/entities/user.entity");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const jwt_strategy_1 = require("./jwt-strategy/jwt.strategy");
+const notification_module_1 = require("../notification/notification.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -27,6 +28,7 @@ exports.AuthModule = AuthModule = __decorate([
                 secret: 'secretKey',
                 signOptions: { expiresIn: '1h' },
             }),
+            notification_module_1.NotificationModule,
         ],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy],
         controllers: [auth_controller_1.AuthController],
