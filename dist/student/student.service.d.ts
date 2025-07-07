@@ -18,4 +18,6 @@ export declare class StudentService {
     private generateResultImage;
     getDailyLeaderboard(): Promise<any[]>;
     getStudentById(studentId: number): Promise<User>;
+    getWeeklyLeaderboard(): Promise<any[]>;
+    getMonthlyLeaderboard(): Promise<any[]>;
 }

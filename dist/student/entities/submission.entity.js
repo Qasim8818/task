@@ -40,6 +40,10 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'int', nullable: true }),
     __metadata("design:type", Number)
 ], Submission.prototype, "attemptTime", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], Submission.prototype, "createdAt", void 0);
 exports.Submission = Submission = __decorate([
     (0, typeorm_1.Entity)()
 ], Submission);

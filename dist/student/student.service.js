@@ -99,6 +99,71 @@ let StudentService = class StudentService {
         }
         return student;
     }
+    async getWeeklyLeaderboard() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - dayOfWeek);
+        startOfWeek.setHours(0, 0, 0, 0);
+        const submissions = await this.submissionsRepository
+            .createQueryBuilder('submission')
+            .leftJoinAndSelect('submission.student', 'student')
+            .leftJoinAndSelect('submission.task', 'task')
+            .where('submission.createdAt >= :startOfWeek', { startOfWeek })
+            .getMany();
+        const studentAttemptCount = new Map();
+        submissions.forEach(submission => {
+            const count = studentAttemptCount.get(submission.student.id) || 0;
+            studentAttemptCount.set(submission.student.id, count + 1);
+        });
+        const fullWeekStudents = Array.from(studentAttemptCount.entries())
+            .filter(([_, count]) => count >= 7)
+            .map(([studentId, _]) => studentId);
+        const leaderboard = submissions
+            .filter(submission => fullWeekStudents.includes(submission.student.id))
+            .map(submission => ({
+            studentId: submission.student.id,
+            studentName: submission.student.username,
+            taskTitle: submission.task.title,
+            score: submission.score,
+            attemptTime: submission.attemptTime,
+        }));
+        leaderboard.sort((a, b) => b.score - a.score || a.attemptTime - b.attemptTime);
+        return leaderboard.slice(0, 10);
+    }
+    async getMonthlyLeaderboard() {
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        const submissions = await this.submissionsRepository
+            .createQueryBuilder('submission')
+            .leftJoinAndSelect('submission.student', 'student')
+            .leftJoinAndSelect('submission.task', 'task')
+            .where('submission.createdAt >= :startOfMonth', { startOfMonth })
+            .getMany();
+        const studentStats = new Map();
+        submissions.forEach(submission => {
+            const stats = studentStats.get(submission.student.id) || { totalScore: 0, totalTime: 0, taskCount: 0 };
+            stats.totalScore += submission.score;
+            stats.totalTime += submission.attemptTime;
+            stats.taskCount += 1;
+            studentStats.set(submission.student.id, stats);
+        });
+        const leaderboard = Array.from(studentStats.entries()).map(([studentId, stats]) => ({
+            studentId,
+            totalScore: stats.totalScore,
+            totalTime: stats.totalTime,
+            taskCount: stats.taskCount,
+        }));
+        leaderboard.sort((a, b) => {
+            if (b.taskCount !== a.taskCount)
+                return b.taskCount - a.taskCount;
+            if (b.totalScore !== a.totalScore)
+                return b.totalScore - a.totalScore;
+            return a.totalTime - b.totalTime;
+        });
+        return leaderboard.slice(0, 10);
+    }
 };
 exports.StudentService = StudentService;
 exports.StudentService = StudentService = __decorate([

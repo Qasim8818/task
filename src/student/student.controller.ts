@@ -31,4 +31,19 @@ export class StudentController {
     // Call a separate student login method in authService
     return this.authService.studentLogin({ username, password });
   }
+
+  @Get('leaderboard/daily')
+  async getDailyLeaderboard() {
+    return this.studentService.getDailyLeaderboard();
+  }
+
+  @Get('leaderboard/weekly')
+  async getWeeklyLeaderboard() {
+    return this.studentService.getWeeklyLeaderboard();
+  }
+
+  @Get('leaderboard/monthly')
+  async getMonthlyLeaderboard() {
+    return this.studentService.getMonthlyLeaderboard();
+  }
 }

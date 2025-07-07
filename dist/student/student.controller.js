@@ -35,6 +35,15 @@ let StudentController = class StudentController {
         const { username, password } = body;
         return this.authService.studentLogin({ username, password });
     }
+    async getDailyLeaderboard() {
+        return this.studentService.getDailyLeaderboard();
+    }
+    async getWeeklyLeaderboard() {
+        return this.studentService.getWeeklyLeaderboard();
+    }
+    async getMonthlyLeaderboard() {
+        return this.studentService.getMonthlyLeaderboard();
+    }
 };
 exports.StudentController = StudentController;
 __decorate([
@@ -64,6 +73,24 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], StudentController.prototype, "login", null);
+__decorate([
+    (0, common_1.Get)('leaderboard/daily'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], StudentController.prototype, "getDailyLeaderboard", null);
+__decorate([
+    (0, common_1.Get)('leaderboard/weekly'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], StudentController.prototype, "getWeeklyLeaderboard", null);
+__decorate([
+    (0, common_1.Get)('leaderboard/monthly'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], StudentController.prototype, "getMonthlyLeaderboard", null);
 exports.StudentController = StudentController = __decorate([
     (0, common_1.Controller)('student'),
     __metadata("design:paramtypes", [student_service_1.StudentService,

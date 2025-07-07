@@ -12,4 +12,7 @@ export declare class StudentController {
         username: string;
         password: string;
     }): Promise<any>;
+    getDailyLeaderboard(): Promise<any[]>;
+    getWeeklyLeaderboard(): Promise<any[]>;
+    getMonthlyLeaderboard(): Promise<any[]>;
 }

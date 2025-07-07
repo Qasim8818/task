@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { User } from './user.entity';
 import { Task } from './task.entity';
 
@@ -21,4 +21,7 @@ export class Submission {
 
   @Column({ type: 'int', nullable: true })
   attemptTime: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }
