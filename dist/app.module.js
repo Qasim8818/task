@@ -17,6 +17,7 @@ const user_entity_1 = require("./student/entities/user.entity");
 const task_entity_1 = require("./student/entities/task.entity");
 const submission_entity_1 = require("./student/entities/submission.entity");
 const mcq_entity_1 = require("./student/entities/mcq.entity");
+const notification_entity_1 = require("./notification/notification.entity");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -38,7 +39,7 @@ exports.AppModule = AppModule = __decorate([
                         username: configService.get('POSTGRES_USER'),
                         password: configService.get('POSTGRES_PASSWORD'),
                         database: configService.get('POSTGRES_DB'),
-                        entities: [user_entity_1.User, task_entity_1.Task, submission_entity_1.Submission, mcq_entity_1.MCQ],
+                        entities: [user_entity_1.User, task_entity_1.Task, submission_entity_1.Submission, mcq_entity_1.MCQ, notification_entity_1.Notification],
                         synchronize: true,
                         ssl: sslEnabled ? { rejectUnauthorized: false } : false
                     };

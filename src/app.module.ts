@@ -8,6 +8,7 @@ import { User } from './student/entities/user.entity';
 import { Task } from './student/entities/task.entity';
 import { Submission } from './student/entities/submission.entity';
 import { MCQ } from './student/entities/mcq.entity';
+import { Notification } from './notification/notification.entity';
 import { STATUS_CODES } from 'http';
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { STATUS_CODES } from 'http';
           username: configService.get<string>('POSTGRES_USER'),
           password: configService.get<string>('POSTGRES_PASSWORD'),
           database: configService.get<string>('POSTGRES_DB'),
-          entities: [User, Task, Submission, MCQ],
+          entities: [User, Task, Submission, MCQ, Notification],
           synchronize: true,
           ssl: sslEnabled ? { rejectUnauthorized: false } : false
         };
