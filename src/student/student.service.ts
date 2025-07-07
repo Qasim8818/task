@@ -91,8 +91,8 @@ export class StudentService {
       attemptTime: submission.attemptTime,
     }));
     leaderboard.sort((a, b) => b.score - a.score || a.attemptTime
-  - b.attemptTime); // Sort by score desc, then by attempt time asc
-    return leaderboard.slice(0, 10); // Return top 10
+  - b.attemptTime); 
+    return leaderboard.slice(0, 10); 
   }
 
   async getStudentById(studentId: number): Promise<User> {
@@ -107,7 +107,7 @@ export class StudentService {
 
   async getWeeklyLeaderboard(): Promise<any[]> {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // Sunday - Saturday : 0 - 6
+    const dayOfWeek = today.getDay(); 
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - dayOfWeek);
     startOfWeek.setHours(0, 0, 0, 0);
@@ -119,14 +119,12 @@ export class StudentService {
       .where('submission.createdAt >= :startOfWeek', { startOfWeek })
       .getMany();
 
-    // Filter students who attempted daily tasks all week
     const studentAttemptCount = new Map<number, number>();
     submissions.forEach(submission => {
       const count = studentAttemptCount.get(submission.student.id) || 0;
       studentAttemptCount.set(submission.student.id, count + 1);
     });
 
-    // Assuming 7 daily tasks in a week
     const fullWeekStudents = Array.from(studentAttemptCount.entries())
       .filter(([_, count]) => count >= 7)
       .map(([studentId, _]) => studentId);
@@ -157,7 +155,6 @@ export class StudentService {
       .where('submission.createdAt >= :startOfMonth', { startOfMonth })
       .getMany();
 
-    // Aggregate scores and attempt times per student
     const studentStats = new Map<number, { totalScore: number; totalTime: number; taskCount: number }>();
     submissions.forEach(submission => {
       const stats = studentStats.get(submission.student.id) || { totalScore: 0, totalTime: 0, taskCount: 0 };

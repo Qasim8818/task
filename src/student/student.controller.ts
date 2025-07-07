@@ -28,7 +28,6 @@ export class StudentController {
   @Post('login')
   async login(@Body() body: { username: string; password: string }) {
     const { username, password } = body;
-    // Call a separate student login method in authService
     return this.authService.studentLogin({ username, password });
   }
 
