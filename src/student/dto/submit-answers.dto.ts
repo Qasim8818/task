@@ -1,7 +1,8 @@
 export class SubmitAnswersDto {
   taskId: number;
   studentId: number;
-  answers: number[];
+  answers: { mcqId: number; selectedOption: number }[];
   startTime: number;
   endTime: number;
 }
+

@@ -20,6 +20,12 @@ export class StudentController {
     return this.studentService.getMCQsByTask(taskId);
   }
 
+  @Post('start-task')
+  async startTask(@Body() body: { studentId: number; taskId: number }) {
+    const { studentId, taskId } = body;
+    return this.studentService.startTask(studentId, taskId);
+  }
+
   @Post('submit-answers')
   async submitAnswers(@Body() submitAnswersDto: SubmitAnswersDto) {
     return this.studentService.submitAnswers(submitAnswersDto);

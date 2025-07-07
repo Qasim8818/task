@@ -61,7 +61,7 @@ export class AuthService {
         role: UserRole.ADMIN,
       });
       await this.usersRepository.save(user);
-      await this.notificationService.createNotification(user, 'You have been registered successfully as an admin.');
+      await this.notificationService.createNotification(user, `Admin ${user.username} has been registered successfully as an admin.`);
       const payload = { username: user.username, sub: user.id, role: user.role };
       console.log(`Admin registered and logged in: ${username}, role: ${user.role}`);
       return {
@@ -106,4 +106,3 @@ export class AuthService {
     };
   }
 }
-

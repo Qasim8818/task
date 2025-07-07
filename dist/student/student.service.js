@@ -21,6 +21,7 @@ const task_entity_1 = require("./entities/task.entity");
 const submission_entity_1 = require("./entities/submission.entity");
 const mcq_entity_1 = require("./entities/mcq.entity");
 const notification_service_1 = require("../notification/notification.service");
+const canvas_1 = require("canvas");
 let StudentService = class StudentService {
     constructor(usersRepository, tasksRepository, submissionsRepository, mcqRepository, notificationService) {
         this.usersRepository = usersRepository;
@@ -35,40 +36,99 @@ let StudentService = class StudentService {
     async getMCQsByTask(taskId) {
         return this.mcqRepository.find({ where: { task: { id: taskId } } });
     }
-    async submitAnswers(submitAnswersDto) {
-        const { studentId, taskId, answers, startTime, endTime } = submitAnswersDto;
-        const attemptTime = endTime - startTime;
+    async startTask(studentId, taskId) {
         const student = await this.usersRepository.findOne({ where: { id: studentId, role: user_entity_1.UserRole.STUDENT } });
         if (!student) {
             throw new common_1.NotFoundException('Student not found');
         }
-        const task = await this.tasksRepository.findOne({ where: { id: taskId }, relations: ['mcqs'] });
+        const task = await this.tasksRepository.findOne({ where: { id: taskId } });
+        if (!task) {
+            throw new common_1.NotFoundException('Task not found');
+        }
+        const existingSubmission = await this.submissionsRepository.findOne({ where: { student: { id: studentId }, task: { id: taskId }, score: null } });
+        if (existingSubmission) {
+            return existingSubmission;
+        }
+        const submission = this.submissionsRepository.create({
+            student,
+            task,
+            startTime: new Date(),
+            imageUrl: '',
+            score: null,
+            attemptTime: null,
+        });
+        await this.submissionsRepository.save(submission);
+        return submission;
+    }
+    async submitAnswers(submitAnswersDto) {
+        const { studentId, taskId, answers } = submitAnswersDto;
+        const student = await this.usersRepository.findOne({ where: { id: studentId, role: user_entity_1.UserRole.STUDENT } });
+        if (!student) {
+            throw new common_1.NotFoundException('Student not found');
+        }
+        const task = await this.tasksRepository
+            .createQueryBuilder('task')
+            .leftJoinAndSelect('task.mcqs', 'mcq')
+            .where('task.id = :taskId', { taskId })
+            .getOne();
         if (!task) {
             throw new common_1.NotFoundException('Task not found');
         }
         if (task.mcqs.length !== answers.length) {
-            throw new Error('Number of answers does not match number of questions');
+            console.error(`submitAnswers validation failed: task.mcqs.length=${task.mcqs.length}, answers.length=${answers.length}`);
+            throw new Error(`Number of answers (${answers.length}) does not match number of questions (${task.mcqs.length})`);
         }
+        const submission = await this.submissionsRepository.findOne({ where: { student: { id: studentId }, task: { id: taskId }, score: null } });
+        if (!submission) {
+            throw new Error('No active submission found. Please start the task first.');
+        }
+        const startTime = submission.startTime;
+        if (!startTime) {
+            throw new Error('Start time not found for submission.');
+        }
+        const endTime = new Date();
+        const attemptTime = endTime.getTime() - startTime.getTime();
+        const answersMap = new Map();
+        answers.forEach(answer => {
+            const mcqId = answer.mcqId !== undefined ? answer.mcqId : answer.id;
+            const mcq = task.mcqs.find(m => m.id === mcqId);
+            if (!mcq) {
+                throw new Error(`Invalid mcqId: ${mcqId}`);
+            }
+            if (answer.selectedOption < 0 || answer.selectedOption >= mcq.options.length) {
+                throw new Error(`Invalid selectedOption for mcqId ${mcqId}: ${answer.selectedOption}`);
+            }
+            answersMap.set(mcqId, answer.selectedOption);
+        });
         let score = 0;
-        for (let i = 0; i < answers.length; i++) {
-            if (answers[i] === task.mcqs[i].correctOptionIndex) {
+        task.mcqs.forEach(mcq => {
+            const submittedAnswer = answersMap.get(mcq.id);
+            console.log(`MCQ ID: ${mcq.id}, Correct Option: ${mcq.correctOptionIndex}, Submitted: ${submittedAnswer}`);
+            if (submittedAnswer !== undefined && submittedAnswer === mcq.correctOptionIndex) {
                 score++;
             }
-        }
-        const imageUrl = await this.generateResultImage(score);
-        const submission = this.submissionsRepository.create({
-            student,
-            task,
-            imageUrl,
-            score,
-            attemptTime,
         });
+        const imageUrl = await this.generateResultImage(score);
+        submission.imageUrl = imageUrl;
+        submission.score = score;
+        submission.attemptTime = attemptTime;
         await this.submissionsRepository.save(submission);
-        await this.notificationService.createNotification(student, `You have submitted answers for task "${task.title}". Your score is ${score} and time taken is ${attemptTime} ms.`);
+        await this.notificationService.createNotification(student, `${student.username} has submitted answers for task "${task.title}". Score: ${score}, Time taken: ${attemptTime} ms.`);
         return submission;
     }
     async generateResultImage(score) {
-        return `data:image/png;base64,RESULT_IMAGE_BASE64_WITH_SCORE_${score}`;
+        const width = 200;
+        const height = 100;
+        const canvas = (0, canvas_1.createCanvas)(width, height);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 30px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`Score: ${score}`, width / 2, height / 2);
+        return canvas.toDataURL('image/png');
     }
     async getDailyLeaderboard() {
         const today = new Date();

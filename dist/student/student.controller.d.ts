@@ -7,6 +7,10 @@ export declare class StudentController {
     constructor(studentService: StudentService, authService: AuthService);
     getTasks(): Promise<import("./entities/task.entity").Task[]>;
     getMCQs(taskId: number): Promise<import("./entities/mcq.entity").MCQ[]>;
+    startTask(body: {
+        studentId: number;
+        taskId: number;
+    }): Promise<import("./entities/submission.entity").Submission>;
     submitAnswers(submitAnswersDto: SubmitAnswersDto): Promise<import("./entities/submission.entity").Submission>;
     login(body: {
         username: string;

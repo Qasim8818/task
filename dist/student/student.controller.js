@@ -28,6 +28,10 @@ let StudentController = class StudentController {
     async getMCQs(taskId) {
         return this.studentService.getMCQsByTask(taskId);
     }
+    async startTask(body) {
+        const { studentId, taskId } = body;
+        return this.studentService.startTask(studentId, taskId);
+    }
     async submitAnswers(submitAnswersDto) {
         return this.studentService.submitAnswers(submitAnswersDto);
     }
@@ -59,6 +63,13 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], StudentController.prototype, "getMCQs", null);
+__decorate([
+    (0, common_1.Post)('start-task'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], StudentController.prototype, "startTask", null);
 __decorate([
     (0, common_1.Post)('submit-answers'),
     __param(0, (0, common_1.Body)()),

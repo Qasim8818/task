@@ -22,6 +22,9 @@ export class Submission {
   @Column({ type: 'int', nullable: true })
   attemptTime: number;
 
+  @Column({ type: 'timestamp', nullable: true })
+  startTime: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 }

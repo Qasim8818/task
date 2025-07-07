@@ -10,8 +10,8 @@ export class AdminController {
   @Post("register-student")
   async registerStudent(@Body() body: { username: string; password: string }, @Request() req) {
     const { username, password } = body;
-    const adminId = req.user.id;
-    return this.adminService.registerStudent(username, password);
+    const adminUsername = req.user.username;
+    return this.adminService.registerStudent(username, password, adminUsername);
   }
 
   @Post("upload-task")

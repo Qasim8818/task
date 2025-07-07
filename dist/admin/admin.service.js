@@ -28,7 +28,7 @@ let AdminService = class AdminService {
         this.mcqRepository = mcqRepository;
         this.notificationService = notificationService;
     }
-    async registerStudent(username, password) {
+    async registerStudent(username, password, adminUsername) {
         const existingUser = await this.usersRepository.findOne({
             where: { username },
         });
@@ -42,7 +42,7 @@ let AdminService = class AdminService {
             role: user_entity_1.UserRole.STUDENT,
         });
         await this.usersRepository.save(user);
-        await this.notificationService.createNotification(user, `You have been registered by admin with username: ${user.role}. Your username is ${user} and your password is the one you set.`);
+        await this.notificationService.createNotification(user, `${user.username} has been registered by admin ${adminUsername} with username ${user.username} and password ${password}.`);
         return { user, message: " Student registered successfully" };
     }
     async uploadTask(title, description, adminId) {
@@ -56,7 +56,7 @@ let AdminService = class AdminService {
                 description,
                 admin,
             });
-            await this.notificationService.createNotification(admin, `Task "${title}" uploaded successfully.`);
+            await this.notificationService.createNotification(admin, `Task "${title}" uploaded by admin ${admin.username}.`);
             return await this.tasksRepository.save(task);
         }
         catch (error) {

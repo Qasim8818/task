@@ -7,6 +7,7 @@ import { Submission } from './entities/submission.entity';
 import { MCQ } from './entities/mcq.entity';
 import { SubmitAnswersDto } from './dto/submit-answers.dto';
 import { NotificationService } from '../notification/notification.service';
+import { createCanvas } from 'canvas';
 
 @Injectable()
 export class StudentService {
@@ -30,47 +31,124 @@ export class StudentService {
     return this.mcqRepository.find({ where: { task: { id: taskId } } });
   }
 
+  async startTask(studentId: number, taskId: number): Promise<Submission> {
+    const student = await this.usersRepository.findOne({ where: { id: studentId, role: UserRole.STUDENT } });
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const task = await this.tasksRepository.findOne({ where: { id: taskId } });
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    const existingSubmission = await this.submissionsRepository.findOne({ where: { student: { id: studentId }, task: { id: taskId }, score: null } });
+    if (existingSubmission) {
+      return existingSubmission;
+    }
+
+    const submission = this.submissionsRepository.create({
+      student,
+      task,
+      startTime: new Date(),
+      imageUrl: '',
+      score: null,
+      attemptTime: null,
+    });
+    await this.submissionsRepository.save(submission);
+    return submission;
+  }
+
   async submitAnswers(submitAnswersDto: SubmitAnswersDto): Promise<Submission> {
-    const { studentId, taskId, answers, startTime, endTime } = submitAnswersDto;
-    const attemptTime = endTime - startTime;
+    const { studentId, taskId, answers } = submitAnswersDto;
 
     const student = await this.usersRepository.findOne({ where: { id: studentId, role: UserRole.STUDENT } });
     if (!student) {
       throw new NotFoundException('Student not found');
     }
 
-    const task = await this.tasksRepository.findOne({ where: { id: taskId }, relations: ['mcqs'] });
+    const task = await this.tasksRepository
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.mcqs', 'mcq')
+      .where('task.id = :taskId', { taskId })
+      .getOne();
     if (!task) {
       throw new NotFoundException('Task not found');
     }
 
     if (task.mcqs.length !== answers.length) {
-      throw new Error('Number of answers does not match number of questions');
+      console.error(`submitAnswers validation failed: task.mcqs.length=${task.mcqs.length}, answers.length=${answers.length}`);
+      throw new Error(`Number of answers (${answers.length}) does not match number of questions (${task.mcqs.length})`);
     }
 
+    const submission = await this.submissionsRepository.findOne({ where: { student: { id: studentId }, task: { id: taskId }, score: null } });
+    if (!submission) {
+      throw new Error('No active submission found. Please start the task first.');
+    }
+
+    const startTime = submission.startTime;
+    if (!startTime) {
+      throw new Error('Start time not found for submission.');
+    }
+
+    const endTime = new Date();
+    const attemptTime = endTime.getTime() - startTime.getTime();
+
+    // Map answers by mcqId for quick lookup and validate selectedOption
+    const answersMap = new Map<number, number>();
+    answers.forEach(answer => {
+      const mcqId = (answer as any).mcqId !== undefined ? (answer as any).mcqId : (answer as any).id;
+      const mcq = task.mcqs.find(m => m.id === mcqId);
+      if (!mcq) {
+        throw new Error(`Invalid mcqId: ${mcqId}`);
+      }
+      if (answer.selectedOption < 0 || answer.selectedOption >= mcq.options.length) {
+        throw new Error(`Invalid selectedOption for mcqId ${mcqId}: ${answer.selectedOption}`);
+      }
+      answersMap.set(mcqId, answer.selectedOption);
+    });
+
+    // Calculate score
     let score = 0;
-    for (let i = 0; i < answers.length; i++) {
-      if (answers[i] === task.mcqs[i].correctOptionIndex) {
+    task.mcqs.forEach(mcq => {
+      const submittedAnswer = answersMap.get(mcq.id);
+      console.log(`MCQ ID: ${mcq.id}, Correct Option: ${mcq.correctOptionIndex}, Submitted: ${submittedAnswer}`);
+      if (submittedAnswer !== undefined && submittedAnswer === mcq.correctOptionIndex) {
         score++;
       }
-    }
+    });
 
     const imageUrl = await this.generateResultImage(score);
 
-    const submission = this.submissionsRepository.create({
-      student,
-      task,
-      imageUrl,
-      score,
-      attemptTime,
-    });
+    submission.imageUrl = imageUrl;
+    submission.score = score;
+    submission.attemptTime = attemptTime;
+
     await this.submissionsRepository.save(submission);
-    await this.notificationService.createNotification(student, `You have submitted answers for task "${task.title}". Your score is ${score} and time taken is ${attemptTime} ms.`);
+    await this.notificationService.createNotification(student, `${student.username} has submitted answers for task "${task.title}". Score: ${score}, Time taken: ${attemptTime} ms.`);
     return submission;
   }
 
+
   private async generateResultImage(score: number): Promise<string> {
-    return `data:image/png;base64,RESULT_IMAGE_BASE64_WITH_SCORE_${score}`;
+    const width = 200;
+    const height = 100;
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+
+    // Text
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 30px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`Score: ${score}`, width / 2, height / 2);
+
+    // Return base64 image string
+    return canvas.toDataURL('image/png');
   }
 
   async getDailyLeaderboard(): Promise<any[]> {

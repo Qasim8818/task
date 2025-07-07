@@ -9,7 +9,7 @@ export declare class AdminService {
     private mcqRepository;
     private notificationService;
     constructor(usersRepository: Repository<User>, tasksRepository: Repository<Task>, mcqRepository: Repository<MCQ>, notificationService: NotificationService);
-    registerStudent(username: string, password: string): Promise<any>;
+    registerStudent(username: string, password: string, adminUsername: string): Promise<any>;
     uploadTask(title: string, description: string, adminId: number): Promise<Task>;
     uploadMCQs(taskId: number, mcqs: {
         question: string;

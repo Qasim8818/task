@@ -14,6 +14,7 @@ export declare class StudentService {
     constructor(usersRepository: Repository<User>, tasksRepository: Repository<Task>, submissionsRepository: Repository<Submission>, mcqRepository: Repository<MCQ>, notificationService: NotificationService);
     getTasks(): Promise<Task[]>;
     getMCQsByTask(taskId: number): Promise<MCQ[]>;
+    startTask(studentId: number, taskId: number): Promise<Submission>;
     submitAnswers(submitAnswersDto: SubmitAnswersDto): Promise<Submission>;
     private generateResultImage;
     getDailyLeaderboard(): Promise<any[]>;

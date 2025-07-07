@@ -22,8 +22,8 @@ let AdminController = class AdminController {
     }
     async registerStudent(body, req) {
         const { username, password } = body;
-        const adminId = req.user.id;
-        return this.adminService.registerStudent(username, password);
+        const adminUsername = req.user.username;
+        return this.adminService.registerStudent(username, password, adminUsername);
     }
     async uploadTask(body, req) {
         const { title, description } = body;

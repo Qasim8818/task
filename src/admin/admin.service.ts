@@ -18,7 +18,7 @@ export class AdminService {
     private notificationService: NotificationService,
   ) {}
 
-  async registerStudent(username: string, password: string): Promise<any> {
+  async registerStudent(username: string, password: string, adminUsername: string): Promise<any> {
     const existingUser = await this.usersRepository.findOne({
       where: { username },
     });
@@ -32,7 +32,7 @@ export class AdminService {
       role: UserRole.STUDENT,
     });
     await this.usersRepository.save(user);
-    await this.notificationService.createNotification(user, `You have been registered by admin with username: ${user.role}. Your username is ${user} and your password is the one you set.`);
+    await this.notificationService.createNotification(user, `${user.username} has been registered by admin ${adminUsername} with username ${user.username} and password ${password}.`);
     return { user, message: " Student registered successfully" };
   }
 
@@ -51,7 +51,7 @@ export class AdminService {
         description,
         admin,
       });
-      await this.notificationService.createNotification(admin, `Task "${title}" uploaded successfully.`);
+      await this.notificationService.createNotification(admin, `Task "${title}" uploaded by admin ${admin.username}.`);
       return await this.tasksRepository.save(task);
     } catch (error) {
       throw new Error(`Failed to upload task: ${error.message}`);
